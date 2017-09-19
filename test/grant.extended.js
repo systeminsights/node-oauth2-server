@@ -22,8 +22,13 @@ var express = require('express'),
 var oauth2server = require('../');
 
 var bootstrap = function (oauthConfig) {
+  var sendResponse = (req, res) => {
+    res.jsonp(res.body)
+  }
+  var continueAfterResponse = true
+
   var app = express(),
-    oauth = oauth2server(oauthConfig || {
+    oauth = oauth2server(Object.assign(oauthConfig, {continueAfterResponse})  || {
       model: {},
       grants: ['password', 'refresh_token']
     });
@@ -31,7 +36,7 @@ var bootstrap = function (oauthConfig) {
   app.set('json spaces', 0);
   app.use(bodyParser());
 
-  app.all('/oauth/token', oauth.grant());
+  app.all('/oauth/token', oauth.grant(), sendResponse);
 
   app.use(oauth.errorHandler());
 
